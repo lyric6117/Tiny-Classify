@@ -1,0 +1,110 @@
+import matplotlib.pyplot as plt
+
+# Global font settings
+plt.rcParams.update({
+    'font.family': 'serif',
+    'font.serif': ['Times New Roman'],
+    'mathtext.fontset': 'stix',
+    'font.size': 12
+})
+
+# New data
+ACC = [93.65, 89.37, 92.11, 92.28, 94.68, 92.8, 91.94, 93.48, 92.68, 94.85, 91.08, 91.94, 91.25, 92.45, 94.34, 93.31, 90.39, 99.25]
+model_size = [789.05, 22.37, 5.87, 105.22, 744.67, 331.49, 83.53, 331.63, 652.85, 300.77, 89.72, 68.39, 1.16, 4.94, 1.52, 333.12, 334.06, 0.80]
+FLOPs = [70.05, 2.42, 2.42, 2.5, 17.08, 7.68, 5.82, 21.59, 131.85, 62.21, 16.52, 11.75, 0.80, 4.55, 0.24, 115, 61.62, 0.17]
+for flop in range(len(FLOPs)):
+    FLOPs[flop] = FLOPs[flop] * 100.0
+
+txt = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R"]  # Scatter point names
+colors = [
+    '#FFA500',  # Orange
+    '#0000FF',  # Blue
+    '#00FF00',  # Green
+    '#FFFF00',  # Yellow
+    '#FF00FF',  # Magenta
+    '#00FFFF',  # Cyan
+    '#800080',  # Purple
+    '#FFA500',  # Orange
+    '#A52A2A',  # Brown
+    '#008080',  # Teal
+    '#FF1493',  # Deep Pink
+    '#FFD700',  # Gold
+    '#FF4500',  # Orange Red
+    '#2E8B57',  # Sea Green
+    '#8B4513',  # Saddle Brown
+    '#DEB887',  # Burly Wood
+    '#5F9EA0',  # Cadet Blue
+    '#FF0000'   # Bright Red for TFDS-CLS (most prominent)
+]
+
+
+# Labels for each model with adjusted names
+labels = {
+    "A": "EfficientNetV2-XL",
+    "B": "EfficientNetV2-L",
+    "C": "EfficientNetV2-B0",
+    "D": "SwinV2 Tiny",
+    "E": "SwinV2 Large",
+    "F": "SwinV2 Base",
+    "G": "ReViT",
+    "H": "DaViT",
+    "I": "RepLKNet-31L",
+    "J": "RepLKNet-31B",
+    "K": "ResNet50",
+    "L": "EdgeNeXt_Base",
+    "M": "EdgeNeXt_Small",
+    "N": "MobileViT",
+    "O": "MobileNetV3",
+    "P": "MixMIM",
+    "Q": "ConvNeXt",
+    "R": "TC(Ours)"
+}
+
+plt.figure(figsize=(12, 10))
+
+# Scatter plot
+scatter = plt.scatter(model_size, ACC, s=[f for f in FLOPs], c=colors, alpha=0.6, edgecolors='k', linewidth=0.5)
+
+# Adding text labels
+for i in range(len(txt)):
+    plt.text(model_size[i], ACC[i], txt[i], fontsize=18, verticalalignment='top', horizontalalignment='right')
+    if txt[i] == "R":
+        plt.annotate(
+            'Ours',
+            xy=(model_size[i], ACC[i]),
+            xytext=(-model_size[i] + 100, -ACC[i] + 10),
+            textcoords='offset points',
+            arrowprops=dict(facecolor='red', shrink=0.05, headwidth=8, width=2),
+            fontsize=18, fontweight='bold', color='red',
+            verticalalignment='bottom', horizontalalignment='right'
+        )
+
+# Set axis labels and title
+plt.xlabel('Model Size (MB)', fontsize=18)
+plt.ylabel('Top-1 Accuracy (%)', fontsize=18)
+plt.title('Comparison of the Classification Results on the Custom Dataset with State-of-the-Art Methods', fontsize=20)
+
+# Add grid
+plt.grid(True, which='both', linestyle='--', linewidth=0.5)
+
+# Custom scatter label legend
+handles1 = [
+    plt.Line2D([0], [0], marker='o', color='w', markerfacecolor=colors[i], markersize=10, label=f"{txt[i]}: {labels[txt[i]]}")
+    for i in range(len(txt))
+]
+legend_labels1 = [f"{txt[i]}: {labels[txt[i]]}" for i in range(len(txt))]
+legend1 = plt.legend(handles1, legend_labels1, title='Model Labels', loc='upper right', fontsize=16, title_fontsize='18', bbox_to_anchor=(1, 1), ncol=3)
+
+# Create second legend handle
+handles2 = [
+    plt.scatter([], [], s=100, label='1 GMac', c='gray', alpha=0.6, edgecolors='k', linewidth=0.5),
+    plt.scatter([], [], s=1000, label='10 GMac', c='gray', alpha=0.6, edgecolors='k', linewidth=0.5)
+]
+legend2 = plt.legend(handles=handles2, title='FLOPs', loc='lower right', fontsize=18, title_fontsize='20', bbox_to_anchor=(1, 0))
+
+# Add legends to the current plot
+plt.gca().add_artist(legend1)
+
+# Show the plot
+plt.tight_layout()
+plt.show()
